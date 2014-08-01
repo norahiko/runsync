@@ -1,0 +1,33 @@
+{
+  "name": "runsync",
+  "version": "0.0.0",
+  "description": "Run child process synchronously",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha -u tdd",
+    "install": "node src/build-script.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/norahiko/runsync.git"
+  },
+  "keywords": [
+    "run",
+    "child_process",
+    "process",
+    "spawn",
+    "spawnSync",
+    "exec",
+    "execSync",
+    "polyfill"
+  ],
+  "author": "norahiko",
+  "license": "MIT",
+  "gypfile": true,
+  "bugs": {
+    "url": "https://github.com/norahiko/runsync/issues"
+  }
+}
