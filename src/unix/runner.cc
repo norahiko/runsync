@@ -10,6 +10,11 @@
 using namespace v8;
 using namespace std;
 
+const double usec = 1.0 / 1000 / 1000;
+
+double tv_to_seconds(struct timeval* tv) {
+    return tv->tv_sec + tv->tv_usec * usec;
+}
 
 SpawnRunner::SpawnRunner(JsString& file, JsArray& args, JsObject& options)
         : file_(file),
@@ -57,13 +62,13 @@ int SpawnRunner::RunParent(pid_t pid) {
     if(0 < timeout_) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        suseconds_t timeout = timeout_ * 1000;
-        suseconds_t start = tv.tv_usec;
+        double timeout = timeout_ / 1000.0;
+        double start = tv_to_seconds(&tv);
 
         while(waitpid(pid, &stat, WNOHANG) == 0) {
             usleep(TIMEOUT_INTERVAL);
             gettimeofday(&tv, NULL);
-            if(timeout < tv.tv_usec - start) {
+            if(timeout < tv_to_seconds(&tv) - start) {
                 kill(pid, SIGTERM);
                 has_timedout_ = true;
             }
