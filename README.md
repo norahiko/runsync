@@ -1,6 +1,6 @@
 runsync
 =======
-Polyfill of spawnSync and execSync for Node-0.10.x
+Polyfill of spawnSync and execSync for Node-0.10.x ***(Unix only yet)***
 
 ## Instllation
 **Requires [node-gyp] (https://github.com/TooTallNate/node-gyp)**
@@ -11,6 +11,11 @@ $ npm install runsync
 ## Usage
 ```js
 var runsync = require("runsync");
-var msg = runsync.exec("echo Hello, world!");
-console.log(msg); // => Hello, world!
+var result = runsync.spawn("echo", ["Hello", "World!"], { encoding: "utf8" });
+console.log(result.stdout); // => Hello world!\n
+
+runsync.exec("sleep 1");
+
+result = runsync.popen("echo Error message 1>&2", { encoding: "utf8" });
+console.log(result.stderr); // => Error message\n
 ```
