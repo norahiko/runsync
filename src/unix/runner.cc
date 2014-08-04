@@ -139,11 +139,11 @@ int SpawnRunner::PipeStdio() {
                 return 1;
             }
        }
-        if(dup2(fd, i) == -1) {
-            fprintf(stderr, "errno: %d\n", errno);
-            perror(names[i]);
-            return 1;
-        }
+       if(dup2(fd, i) == -1) {
+           fprintf(stderr, "errno: %d\n", errno);
+           perror(names[i]);
+           return 1;
+       }
     }
     return 0;
 }
