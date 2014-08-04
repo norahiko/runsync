@@ -1,6 +1,5 @@
 "use strict";
 
-var child_process = require("child_process");
 var constants = require("constants");
 var assert = require("assert");
 var fs = require("fs");
@@ -12,18 +11,16 @@ var shell = isWindows ? "cmd.exe" : "/bin/sh";
 var polyfill;
 var errorCodeMap;
 
-if(child_process.spawnSync === undefined) {
-    try {
-        polyfill = require("./build/Release/polyfill.node");
-    } catch(_) {
-        polyfill = require("./build/Debug/polyfill.node");
-    }
+try {
+    polyfill = require("./build/Release/polyfill.node");
+} catch(_) {
+    polyfill = require("./build/Debug/polyfill.node");
+}
 
-    errorCodeMap = Object.create(null);
-    for(var code in constants) {
-        if(code[0] === "E") {   // code == Error code
-            errorCodeMap[constants[code]] = code;
-        }
+errorCodeMap = Object.create(null);
+for(var code in constants) {
+    if(code[0] === "E") {   // code == Error code
+        errorCodeMap[constants[code]] = code;
     }
 }
 
@@ -34,7 +31,7 @@ if(child_process.spawnSync === undefined) {
 
 exports.polyfill = polyfill;
 
-exports.spawn = child_process.spawnSync || function spawn(file, args, options) {
+exports.spawn = function spawn(file, args, options) {
     if(Array.isArray(args) === false) {
         options = args;
         args = [];
@@ -44,7 +41,7 @@ exports.spawn = child_process.spawnSync || function spawn(file, args, options) {
     return proc.run();
 };
 
-exports.exec = child_process.execSync || function exec(command, options) {
+exports.exec = function exec(command, options) {
     var result = exports.popen(command, options);
     if(result.stderr) {
         process.stderr.write(result.stderr.toString());
@@ -58,9 +55,7 @@ exports.exec = child_process.execSync || function exec(command, options) {
 exports.popen = function popen(command, options) {
     var args = buildCommandArgs(command);
     var result = exports.spawn(shell, args, options);
-    if(polyfill) {
-        result.command = result.args[2];
-    }
+    result.command = result.args[2];
     return result;
 };
 

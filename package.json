@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha -u tdd",
-    "install": "node src/build-script.js"
+    "install": "node-gyp rebuild"
   },
   "repository": {
     "type": "git",
@@ -29,5 +29,9 @@
   "gypfile": true,
   "bugs": {
     "url": "https://github.com/norahiko/runsync/issues"
+  },
+  "devDependencies": {
+    "chai": "~1.9.1",
+    "mocha": "~1.21.3"
   }
 }
