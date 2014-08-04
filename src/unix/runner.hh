@@ -3,6 +3,9 @@
 
 #include "../spawnSync.hh"
 
+const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
+
+
 class SpawnRunner {
     public:
         SpawnRunner(JsString&, JsArray&, JsObject&);

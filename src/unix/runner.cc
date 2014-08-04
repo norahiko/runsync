@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include <time.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/time.h>
 #include "runner.hh"
 #include <iostream>
 
@@ -55,12 +55,15 @@ int SpawnRunner::RunParent(pid_t pid) {
     child_pid_ = pid;
     int stat;
     if(0 < timeout_) {
-        time_t timeout = timeout_ / 1000;
-        time_t start = time(0);
+        struct timeval tv;
+        gettimeofday(&tv, NULL);
+        suseconds_t timeout = timeout_ * 1000;
+        suseconds_t start = tv.tv_usec;
 
         while(waitpid(pid, &stat, WNOHANG) == 0) {
-            usleep(1000 * 500);
-            if(timeout < time(0) - start) {
+            usleep(TIMEOUT_INTERVAL);
+            gettimeofday(&tv, NULL);
+            if(timeout < tv.tv_usec - start) {
                 kill(pid, SIGTERM);
                 has_timedout_ = true;
             }
