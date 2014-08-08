@@ -33,5 +33,8 @@
   "devDependencies": {
     "chai": "~1.9.1",
     "mocha": "~1.21.3"
+  },
+  "dependencies": {
+    "nan": "~1.3.0"
   }
 }

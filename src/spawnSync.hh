@@ -2,13 +2,18 @@
 #define SPAWN_SYNC_POLYFILL_H
 
 #include <node.h>
+#include <nan.h>
 
-#define TypeError(msg) ThrowException(Exception::TypeError(String::New(msg)));
-#define Symbol(str) v8::String::NewSymbol(str)
+using v8::Array;
+using v8::Boolean;
+using v8::Exception;
+using v8::Handle;
+using v8::HandleScope;
+using v8::Local;
+using v8::Null;
+using v8::Number;
+using v8::Object;
+using v8::String;
+using v8::Value;
 
-typedef const v8::Arguments&  Args;
-typedef v8::Local<v8::Value> JsValue;
-typedef v8::Local<v8::String> JsString;
-typedef v8::Local<v8::Array>  JsArray;
-typedef v8::Local<v8::Object> JsObject;
 #endif

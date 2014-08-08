@@ -20,7 +20,7 @@ try {
 
 errorCodeMap = Object.create(null);
 for(var code in constants) {
-    if(code[0] === "E") {   // code == Error code
+    if(code[0] === "E" && ! (constants[code] in errorCodeMap)) {
         errorCodeMap[constants[code]] = code;
     }
 }

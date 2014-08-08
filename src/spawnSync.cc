@@ -8,23 +8,23 @@
 
 using namespace v8;
 
-Handle<Value> SpawnSync(Args arguments) {
-    HandleScope scope;
+NAN_METHOD(SpawnSync) {
+    NanScope();
 
-    if(arguments.Length() != 3 ||
-       arguments[0]->IsString() == false ||
-       arguments[1]->IsArray() == false ||
-       arguments[2]->IsObject() == false) {
-        return TypeError("Invalid arguments");
+    if(args.Length() != 3 ||
+       args[0]->IsString() == false ||
+       args[1]->IsArray() == false ||
+       args[2]->IsObject() == false) {
+        return NanThrowTypeError("Invalid arguments");
     }
 
-    JsString file = arguments[0].As<String>();
-    JsArray args = arguments[1].As<Array>();
-    JsObject options = arguments[2].As<Object>();
+    Local<String> file = args[0].As<String>();
+    Local<Array> spawn_args = args[1].As<Array>();
+    Local<Object> options = args[2].As<Object>();
 
-    SpawnRunner runner(file, args, options);
-    JsObject result = runner.Run();
-    return scope.Close(result);
+    SpawnRunner runner(file, spawn_args, options);
+    Local<Object> result = runner.Run();
+    NanReturnValue(result);
 }
 
 
