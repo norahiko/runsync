@@ -1,7 +1,7 @@
-#ifndef UNIX_SPAWN_RUNNER
-#define UNIX_SPAWN_RUNNER
+#ifndef RUNSYNC_RUNNER_H_
+#define RUNSYNC_RUNNER_H_
 
-#include "../spawnSync.hh"
+#include "../runsync.hh"
 
 const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
 

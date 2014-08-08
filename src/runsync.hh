@@ -6,9 +6,7 @@
 
 using v8::Array;
 using v8::Boolean;
-using v8::Exception;
 using v8::Handle;
-using v8::HandleScope;
 using v8::Local;
 using v8::Null;
 using v8::Number;

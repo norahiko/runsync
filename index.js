@@ -9,16 +9,9 @@ var util = require("util");
 var isWindows = process.platform === "win32";
 var shell = isWindows ? "cmd.exe" : "/bin/sh";
 var tmpdir = require("os").tmpdir();
-var polyfill;
-var errorCodeMap;
+var binding = require("./build/Release/runsync.node");
+var errorCodeMap = Object.create(null);
 
-try {
-    polyfill = require("./build/Release/polyfill.node");
-} catch(_) {
-    polyfill = require("./build/Debug/polyfill.node");
-}
-
-errorCodeMap = Object.create(null);
 for(var code in constants) {
     if(code[0] === "E" && ! (constants[code] in errorCodeMap)) {
         errorCodeMap[constants[code]] = code;
@@ -30,7 +23,7 @@ for(var code in constants) {
  * exports
  */
 
-exports.polyfill = polyfill;
+exports.binding = binding;
 
 exports.spawn = function spawn(file, args, options) {
     if(Array.isArray(args) === false) {
@@ -85,7 +78,7 @@ function SyncProcess(file, args, options) {
 }
 
 SyncProcess.prototype.run = function() {
-    var result = polyfill.spawnSync(this.file, this.args, this.options);
+    var result = binding.spawnSync(this.file, this.args, this.options);
     this.readOutput(result);
     this.setErrorObject(result);
     return result;

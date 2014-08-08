@@ -3,20 +3,20 @@
     ["OS=='win'", {
       "targets": [
         {
-          "target_name": "polyfill",
-          "sources": [ "src/spawnSync.cc"],
+          "target_name": "runsync",
+          "sources": [ "src/runsync.cc"],
         }, {
-          "target_name": "spawn_main",
+          "target_name": "runsync_main",
           "type": "executable",
-          "sources": ["src/win/spawn_main.cc"],
+          "sources": ["src/win/runsync_main.cc"],
           "include_dirs": ["node_modules/nan"],
         }
       ],
     }, {
       "targets": [
         {
-          "target_name": "polyfill",
-          "sources": [ "src/spawnSync.cc", "src/unix/runner.cc"],
+          "target_name": "runsync",
+          "sources": [ "src/runsync.cc", "src/unix/runner.cc"],
           "include_dirs": ["node_modules/nan"],
         },
       ]

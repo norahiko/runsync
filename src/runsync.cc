@@ -1,4 +1,4 @@
-#include "spawnSync.hh"
+#include "runsync.hh"
 
 #ifdef _MSC_VER
 # include "win/runner.hh"
@@ -33,4 +33,4 @@ void init(Handle<Object> exports) {
 }
 
 
-NODE_MODULE(polyfill, init)
+NODE_MODULE(runsync, init)
