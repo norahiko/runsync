@@ -1,4 +1,4 @@
-runsync
+runsync [![Build Status](https://travis-ci.org/norahiko/runsync.svg?branch=master)](https://travis-ci.org/norahiko/runsync)
 =======
 Polyfill of spawnSync and execSync for Node-0.10.x ***(Unix only yet)***
 
