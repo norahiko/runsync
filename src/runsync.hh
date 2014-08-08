@@ -1,5 +1,5 @@
-#ifndef SPAWN_SYNC_POLYFILL_H
-#define SPAWN_SYNC_POLYFILL_H
+#ifndef SPAWN_SYNC_POLYFILL_H_
+#define SPAWN_SYNC_POLYFILL_H_
 
 #include <node.h>
 #include <nan.h>
