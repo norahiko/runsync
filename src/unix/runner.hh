@@ -3,6 +3,8 @@
 
 #include "../runsync.hh"
 
+namespace runsync {
+
 const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
 
 
@@ -27,4 +29,6 @@ class SpawnRunner {
         int64_t timeout_; // milliseconds
         bool has_timedout_;
 };
+
+} // namespace runsync
 #endif

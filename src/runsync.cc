@@ -22,7 +22,7 @@ NAN_METHOD(SpawnSync) {
     Local<Array> spawn_args = args[1].As<Array>();
     Local<Object> options = args[2].As<Object>();
 
-    SpawnRunner runner(file, spawn_args, options);
+    runsync::SpawnRunner runner(file, spawn_args, options);
     Local<Object> result = runner.Run();
     NanReturnValue(result);
 }

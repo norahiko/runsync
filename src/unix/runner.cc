@@ -8,6 +8,8 @@
 #include "runner.hh"
 
 
+namespace runsync {
+
 double tv_to_seconds(struct timeval* tv) {
     static double usec = 1.0 / 1000 / 1000;
     return tv->tv_sec + tv->tv_usec * usec;
@@ -174,3 +176,5 @@ int SpawnRunner::ChangeDirectory() {
     }
     return 0;
 }
+
+} // namespace runsync
