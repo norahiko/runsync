@@ -8,6 +8,7 @@ var util = require("util");
 
 var isWindows = process.platform === "win32";
 var shell = isWindows ? "cmd.exe" : "/bin/sh";
+var tmpdir = require("os").tmpdir();
 var polyfill;
 var errorCodeMap;
 
@@ -37,7 +38,7 @@ exports.spawn = function spawn(file, args, options) {
         args = [];
     }
 
-    var proc = new ProcessSync(file, args, options || {});
+    var proc = new SyncProcess(file, args, options);
     return proc.run();
 };
 
@@ -69,95 +70,82 @@ exports.shell = function shell(command, options) {
     }
 };
 
-var tmpdir = require("os").tmpdir();
-
-exports.stdinFile = pathModule.join(tmpdir, "runsync_stdin_" + process.pid);
-
-exports.stdoutFile = pathModule.join(tmpdir, "runsync_stdout_" + process.pid);
-
-exports.stderrFile = pathModule.join(tmpdir, "runsync_stderr_" + process.pid);
-
 
 /**
- * ProcessSync class
+ * SyncProcess class
  */
 
-function ProcessSync(file, args, options) {
+function SyncProcess(file, args, options) {
     this.file = file;
     this.args = args.slice(0);
     this.args.unshift(this.file);
-    this.options = util._extend({}, options);
-    this.normalizeOptions();
-
+    this.options = options ? util._extend({}, options) : {};
+    this.normalizeOptions(this.options);
+    this.initStdioPipe(this.options);
 }
 
-ProcessSync.prototype.run = function() {
+SyncProcess.prototype.run = function() {
     var result = polyfill.spawnSync(this.file, this.args, this.options);
-    this.readStdioFiles(result);
+    this.readOutput(result);
     this.setErrorObject(result);
     return result;
 };
 
-ProcessSync.prototype.normalizeOptions = function () {
+SyncProcess.prototype.normalizeOptions = function (opts) {
     var envPairs = [];
-    for(var name in this.options.env) {
-        envPairs.push(name + "=" + this.options.env[name]);
+    for(var name in opts.env) {
+        envPairs.push(name + "=" + opts.env[name]);
     }
-    this.options.envPairs = envPairs;
-    this.initStdioPipe();
+    opts.envPairs = envPairs;
+
+    if(opts.encoding === "buffer") {
+        opts.encoding = null;
+    }
+    opts.input = opts.input || "";
+    opts.stdio = opts.stdio || "pipe";
 };
 
-ProcessSync.prototype.initStdioPipe = function() {
-    var opt = this.options;
-
-    if(opt.stdio === undefined) {
-        opt.stdio = "pipe";
+SyncProcess.prototype.initStdioPipe = function(opts) {
+    if(opts.stdio === "pipe" || opts.stdio === "inherit" || opts.stdio === "ignore") {
+        opts.stdio = [opts.stdio, opts.stdio, opts.stdio];
     }
-    if(opt.stdio === "pipe") {
-        opt.stdio = ["pipe", "pipe", "pipe"];
-    } else if(opt.stdio === "inherit") {
-        opt.stdio = ["inherit", "inherit", "inherit"];
-    } else if(opt.stdio === "ignore") {
-        opt.stdio = ["ignore", "ignore", "ignore"];
+    assert(opts.stdio instanceof Array, "runsync: options.stdio");
+    while(opts.stdio.length < 3) {
+        opts.stdio.push(null);
     }
 
-    assert(opt.stdio instanceof Array);
-
-    if(opt.stdio[0] === "pipe") {
-        fs.writeFileSync(exports.stdinFile, opt.input || "");
-        opt.stdio[0] = fs.openSync(exports.stdinFile, "r");
-    }
-    if(opt.stdio[1] === "pipe") {
-        opt.stdio[1] = fs.openSync(exports.stdoutFile, "w");
-    }
-    if(opt.stdio[2] === "pipe") {
-        opt.stdio[2] = fs.openSync(exports.stderrFile, "w");
-    }
+    var input = opts.input;
+    opts.stdio.forEach(function(pipe, i) {
+        if(pipe === "pipe") {
+            var filename = getTempfileName();
+            fs.writeFileSync(filename, i === 0 ? input : "");
+            opts.stdio[i] = filename;
+        } else if(pipe === null || pipe === undefined) {
+            opts.stdio[i] = "ignore";
+        } else if(typeof pipe !== "number" && pipe !== "inherit" && pipe !== "ignore") {
+            throw new Error("runsync: Invalid stdio option '" + pipe + "'");
+        }
+    });
 };
 
-ProcessSync.prototype.readStdioFiles = function(res) {
-    var opt = this.options;
-    var encoding = opt.encoding === "buffer" ? null : opt.encoding;
-    res.stdout = null;
-    res.stderr = null;
-
-    if(typeof opt.stdio[0] === "number") {
-        fs.closeSync(opt.stdio[0]);
-    }
-    if(typeof opt.stdio[1] === "number") {
-        fs.closeSync(opt.stdio[1]);
-        res.stdout = fs.readFileSync(exports.stdoutFile, encoding);
-    }
-    if(typeof opt.stdio[2] === "number") {
-        fs.closeSync(opt.stdio[2]);
-        res.stderr = fs.readFileSync(exports.stderrFile, encoding);
-    }
-
-    res.output = [null, res.stdout, res.stderr];
-
+SyncProcess.prototype.readOutput = function(res) {
+    var encoding = this.options.encoding;
+    res.output = this.options.stdio.map(function(pipe, i) {
+        if(typeof pipe === "number" || pipe === "inherit" || pipe === "ignore") {
+            return null;
+        } else {
+            var out = fs.readFileSync(pipe);
+            if(encoding) {
+                out = out.toString(encoding);
+            }
+            return out;
+        }
+    });
+    res.stdout = res.output[1];
+    res.stderr = res.output[2];
 };
 
-ProcessSync.prototype.setErrorObject = function(res) {
+SyncProcess.prototype.setErrorObject = function(res) {
     if(res._hasTimedOut) {
         delete res._hasTimedOut;
         res.error = createSpawnError("", constants.ETIMEDOUT);
@@ -176,6 +164,11 @@ ProcessSync.prototype.setErrorObject = function(res) {
         res.stderr = null;
     }
 };
+
+function getTempfileName() {
+    var name = "runsync_" + Date.now() + "_" + Math.random().toString().slice(2);
+    return pathModule.join(tmpdir, name);
+}
 
 function buildCommandArgs(command) {
     if (isWindows) {
