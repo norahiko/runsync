@@ -66,7 +66,7 @@ suite("popen:", function() {
     });
 
     test("timeout", function () {
-        var res = runsync.popen("sleep 1", { timeout: 30 });
+        var res = runsync.popen("sleep 3", { timeout: 30 });
         equal(res.signal, "SIGTERM");
         assert.notEqual(res.status, 0);
 

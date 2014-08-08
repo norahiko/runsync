@@ -41,7 +41,11 @@ exports.exec = function exec(command, options) {
         process.stderr.write(result.stderr.toString());
     }
     if(result.error || result.status !== 0) {
-        throw new Error("Command failed: `" + command + "`\n" + result.stderr.toString());
+        var msg = "Command failed: `" + command + "`";
+        if(result.stderr) {
+            msg += "\n" + result.stderr.toString();
+        }
+        throw new Error(msg);
     }
     return result.stdout;
 };
@@ -80,7 +84,7 @@ function SyncProcess(file, args, options) {
 SyncProcess.prototype.run = function() {
     var result = binding.spawnSync(this.file, this.args, this.options);
     this.readOutput(result);
-    this.setErrorObject(result);
+    this.setSpawnError(result);
     return result;
 };
 
@@ -126,6 +130,9 @@ SyncProcess.prototype.readOutput = function(res) {
     res.output = this.options.stdio.map(function(pipe, i) {
         if(typeof pipe === "number" || pipe === "inherit" || pipe === "ignore") {
             return null;
+        } else if(i === 0) {
+            fs.unlinkSync(pipe);
+            return null;
         } else {
             var out = fs.readFileSync(pipe);
             fs.unlinkSync(pipe);
@@ -139,21 +146,21 @@ SyncProcess.prototype.readOutput = function(res) {
     res.stderr = res.output[2];
 };
 
-SyncProcess.prototype.setErrorObject = function(res) {
+SyncProcess.prototype.setSpawnError = function(res) {
     if(res._hasTimedOut) {
         delete res._hasTimedOut;
-        res.error = createSpawnError("", constants.ETIMEDOUT);
+        res.error = createSpawnError(constants.ETIMEDOUT, "");
     }
 
-    if(res.error !== undefined || res.status !== 127) {
-        return;
+    if(res._errmsg) {
+        var msg = res._errmsg;
+        delete res._errmsg;
+        var match = /^(\d+) (.*)/.exec(msg);
+        res.error = createSpawnError(Number(match[1]), match[2]);
     }
 
-    var stderr = res.stderr.toString();
-    var match = stderr.match(/^errno: (\d+)\n/);
-    if(match) {
-        var message = stderr.slice(match[0].length, -1);
-        res.error = createSpawnError(message, parseInt(match[1]));
+    if(res.error) {
+        res.output = null;
         res.stdout = null;
         res.stderr = null;
     }
@@ -172,7 +179,7 @@ function buildCommandArgs(command) {
     }
 }
 
-function createSpawnError(msg, errno) {
+function createSpawnError(errno, msg) {
     var code = errorCodeMap[errno] || "";
     var message = "spawnSync " + code;
     if(msg) {

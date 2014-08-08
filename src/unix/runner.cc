@@ -7,8 +7,9 @@
 #include <iostream>
 #include "runner.hh"
 
-
 namespace runsync {
+
+const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
 
 double tv_to_seconds(struct timeval* tv) {
     static double usec = 1.0 / 1000 / 1000;
@@ -28,11 +29,14 @@ SpawnRunner::SpawnRunner(const Local<String>& file, const Local<Array>& args, co
 }
 
 Local<Object> SpawnRunner::Run() {
+    pipe(err_pipe_);
     pid_t pid = fork();
     if(pid == 0) {
+        close(err_pipe_[0]);
         RunChild();
         _exit(127);
     } else {
+        close(err_pipe_[1]);
         int stat = RunParent(pid);
         return BuildResultObject(stat, pid);
     }
@@ -46,8 +50,7 @@ int SpawnRunner::RunChild() {
     String::Utf8Value file(file_);
     char** args = BuildArgs();
     execvp(*file, args);
-    fprintf(stderr, "errno: %d\n", errno);
-    perror(*file);
+    SendErrno(*file);
     return 1;
 }
 
@@ -63,6 +66,7 @@ int SpawnRunner::RunParent(pid_t pid) {
             usleep(TIMEOUT_INTERVAL);
             gettimeofday(&tv, NULL);
             if(timeout < tv_to_seconds(&tv) - start) {
+                close(err_pipe_[0]);
                 kill(pid, SIGTERM);
                 has_timedout_ = true;
             }
@@ -93,6 +97,14 @@ Local<Object> SpawnRunner::BuildResultObject(int stat, pid_t pid) {
     if(has_timedout_) {
         result->Set(NanNew<String>("_hasTimedOut"), NanNew<Boolean>(has_timedout_));
     }
+
+    char errmsg[1024];
+    int read_size = read(err_pipe_[0], errmsg, 1024);
+    close(err_pipe_[0]);
+    if(0 < read_size) {
+        result->Set(NanNew<String>("_errmsg"), NanNew<String>(errmsg));
+    }
+
     return result;
 }
 
@@ -139,16 +151,15 @@ int SpawnRunner::PipeStdio() {
             }
 
             if(fd == -1) {
-                fprintf(stderr, "errno: %d\n%s\n", errno, *pipe_value);
+                SendErrno(*pipe_value);
                 return 1;
             }
         }
         if(dup2(fd, fileno) == -1) {
-            fprintf(stderr, "errno: %d\n", errno);
+            SendErrno("dup");
             return 1;
         }
     }
-        //std::cerr << "ok" << std::endl;
     return 0;
 }
 
@@ -169,12 +180,17 @@ int SpawnRunner::ChangeDirectory() {
         String::Utf8Value cwd_value(cwd);
         int err = chdir(*cwd_value);
         if(err) {
-            fprintf(stderr, "errno: %d\n", errno);
-            perror(*cwd_value);
+            SendErrno(*cwd_value);
             return err;
         }
     }
     return 0;
+}
+
+void SpawnRunner::SendErrno(const char* msg) {
+    char str[1024];
+    snprintf(str, 1022, "%d %s", errno, msg);
+    write(err_pipe_[1], str, strlen(str) + 1);
 }
 
 } // namespace runsync

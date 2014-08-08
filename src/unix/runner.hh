@@ -5,9 +5,6 @@
 
 namespace runsync {
 
-const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
-
-
 class SpawnRunner {
     public:
         SpawnRunner(const Local<String>&, const Local<Array>&, const Local<Object>&);
@@ -21,10 +18,13 @@ class SpawnRunner {
         int SetEnvironment();
         int PipeStdio();
         int ChangeDirectory();
+        void SendErrno(const char*);
 
         Local<String> file_;
         Local<Array> args_;
         Local<Object> options_;
+
+        int err_pipe_[2];
         char* exec_file_;
         int64_t timeout_; // milliseconds
         bool has_timedout_;

@@ -5,6 +5,7 @@ var chai = require("chai");
 
 var assert = chai.assert;
 var equal = assert.strictEqual;
+var deepEqual = assert.deepEqual;
 
 suite("spawn:", function() {
     test("echo", function() {
@@ -28,6 +29,7 @@ suite("spawn:", function() {
         var res = runsync.spawn("echo", ["hello"], { encoding: "utf8" });
         equal(res.stdout, "hello\n");
         equal(res.stderr, "");
+        deepEqual(res.output, [null, "hello\n", ""]);
     });
 
     test("not exists", function() {
