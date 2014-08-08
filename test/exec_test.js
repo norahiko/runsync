@@ -6,7 +6,7 @@ var chai = require("chai");
 var assert = chai.assert;
 var equal = assert.strictEqual;
 
-suite("exec", function() {
+suite("exec:", function() {
     var expected;
     var err = process.stderr.write;
 

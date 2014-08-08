@@ -7,7 +7,7 @@ var fs = require("fs");
 var assert = chai.assert;
 var equal = assert.strictEqual;
 
-suite("popen", function() {
+suite("popen:", function() {
     test("echo stdout and stderr", function() {
         var res = runsync.popen("echo hello && echo world 1>&2", { encoding: "utf8" });
 

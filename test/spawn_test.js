@@ -6,7 +6,7 @@ var chai = require("chai");
 var assert = chai.assert;
 var equal = assert.strictEqual;
 
-suite("spawn", function() {
+suite("spawn:", function() {
     test("echo", function() {
         var res = runsync.spawn("echo", ["hello", "world"]);
 
