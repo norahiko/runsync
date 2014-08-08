@@ -128,6 +128,7 @@ SyncProcess.prototype.readOutput = function(res) {
             return null;
         } else {
             var out = fs.readFileSync(pipe);
+            fs.unlinkSync(pipe);
             if(encoding) {
                 out = out.toString(encoding);
             }
