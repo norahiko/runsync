@@ -173,10 +173,13 @@ int SpawnRunner::SetEnvironment() {
     Local<Array> envPairs = options_->Get(NanNew<String>("envPairs")).As<Array>();
     int len = envPairs->Length();
     for(int i = 0; i < len; i++) {
-        String::Utf8Value value(envPairs->Get(i));
-        putenv(*value);
-    }
+        String::Utf8Value pair_value(envPairs->Get(i));
+        int len = pair_value.length();
 
+        char *pair = new char[len + 1];
+        strncpy(pair, *pair_value, len);
+        putenv(pair);
+    }
     return 0;
 }
 
