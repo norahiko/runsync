@@ -74,20 +74,6 @@ suite("popen:", function() {
         equal(res.error.code, "ETIMEDOUT");
     });
 
-    test("echo $PWD", function() {
-        var res = runsync.popen("echo $PWD", { cwd: "/", encoding: "utf8" });
-        equal(res.stdout, "/\n");
-    });
-
-    test("invalid cwd path", function() {
-        var res = runsync.popen("echo $PWD", { cwd: "/not_exits_dir" });
-        assert.notEqual(res.status, 0);
-        equal(res.stdout, null);
-        equal(res.stderr, null);
-        equal(res.error.constructor, Error);
-        equal(res.error.code, "ENOENT");
-    });
-
     test("additional pipe", function() {
         var options = {
             stdio: ["pipe", "pipe",  "pipe",  "pipe",  "pipe"],

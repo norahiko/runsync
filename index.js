@@ -40,13 +40,8 @@ exports.exec = function exec(command, options) {
     if(result.stderr) {
         process.stderr.write(result.stderr.toString());
     }
-    if(result.error || result.status !== 0) {
-        var msg = "Command failed: `" + command + "`";
-        if(result.stderr) {
-            msg += "\n" + result.stderr.toString();
-        }
-        throw new Error(msg);
-    }
+    assertCommandResult(command, result);
+
     return result.stdout;
 };
 
@@ -62,9 +57,7 @@ exports.shell = function shell(command, options) {
     options.stdio = "inherit";
     var result = exports.popen(command, options);
 
-    if(result.error || result.status !== 0) {
-        throw new Error("Command failed: `" + command + "`\n" + result.stderr.toString());
-    }
+    assertCommandResult(command, result);
 };
 
 
@@ -165,6 +158,17 @@ SyncProcess.prototype.setSpawnError = function(res) {
         res.stderr = null;
     }
 };
+
+
+function assertCommandResult(command, result) {
+    if(result.error || result.status !== 0) {
+        var msg = "Command failed: `" + command + "`";
+        if(result.stderr) {
+            msg += "\n" + result.stderr.toString();
+        }
+        throw new Error(msg);
+    }
+}
 
 function getTempfileName() {
     var name = "runsync_" + Date.now() + "_" + Math.random().toString().slice(2);
