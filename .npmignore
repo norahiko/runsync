@@ -1,5 +1,7 @@
-test/
-sandbox/
+bench/
 build/
+sandbox/
+test/
 .*
 *.log
+*.html
