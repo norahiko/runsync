@@ -1,5 +1,8 @@
-runsync [![Build Status](https://travis-ci.org/norahiko/runsync.svg?branch=master)](https://travis-ci.org/norahiko/runsync)
+runsync 
 =======
+[![Build Status](https://travis-ci.org/norahiko/runsync.svg?branch=master)](https://travis-ci.org/norahiko/runsync)
+[![Coverage Status](https://coveralls.io/repos/norahiko/runsync/badge.png?branch=master)](https://coveralls.io/r/norahiko/runsync?branch=master)
+
 Polyfill of spawnSync and execSync for Node-0.10.x ***(Unix only yet)***
 
 ## Instllation
