@@ -10,7 +10,7 @@
     "test": "mocha -u tdd",
     "install": "node-gyp rebuild",
     "coverage": "mocha -u tdd --require blanket -R html-cov > coverage.html && google-chrome coverage.html",
-    "travis-ci": "mocha -u tdd --require blanket -R mocha-lcov-reporter | coveralls"
+    "coveralls": "mocha -u tdd --require blanket -R mocha-lcov-reporter | coveralls"
   },
   "repository": {
     "type": "git",
