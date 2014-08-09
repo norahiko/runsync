@@ -59,7 +59,7 @@ suite("spawn:", function() {
 
     test("spawn delay.js", function() {
         var path = "test/spawn_script/delay.js";
-        var res = runsync.spawn("node", [path], { timeout: 200, encoding: "utf8"});
+        var res = runsync.spawn("node", [path], { timeout: 3000, encoding: "utf8"});
         equal(res.stdout, "I'm late!\n");
     });
 });
