@@ -29,7 +29,9 @@ SpawnRunner::SpawnRunner(const Local<String>& file, const Local<Array>& args, co
 }
 
 Local<Object> SpawnRunner::Run() {
-    pipe(err_pipe_);
+    int err = pipe(err_pipe_);
+    assert(err == 0);
+
     pid_t pid = fork();
     if(pid == 0) {
         close(err_pipe_[0]);
@@ -66,7 +68,6 @@ int SpawnRunner::RunParent(pid_t pid) {
             usleep(TIMEOUT_INTERVAL);
             gettimeofday(&tv, NULL);
             if(timeout < tv_to_seconds(&tv) - start) {
-                close(err_pipe_[0]);
                 kill(pid, SIGTERM);
                 has_timedout_ = true;
             }
@@ -79,13 +80,16 @@ int SpawnRunner::RunParent(pid_t pid) {
 
 Local<Object> SpawnRunner::BuildResultObject(int stat, pid_t pid) {
     Local<Object> result = NanNew<Object>();
-
     int status = 0;
+    bool pipe_closed = false;
+
     if(WIFEXITED(stat)) {
         status = WEXITSTATUS(stat);
         result->Set(NanNew<String>("signal"), NanNull());
     } else if(WIFSIGNALED(stat)) {
         int sig = WTERMSIG(stat);
+        close(err_pipe_[0]);
+        pipe_closed = true;
         result->Set(NanNew<String>("signal"), NanNew<String>(node::signo_string(sig)));
         status = 128 + sig;
     }
@@ -98,11 +102,13 @@ Local<Object> SpawnRunner::BuildResultObject(int stat, pid_t pid) {
         result->Set(NanNew<String>("_hasTimedOut"), NanNew<Boolean>(has_timedout_));
     }
 
-    char errmsg[1024];
-    int read_size = read(err_pipe_[0], errmsg, 1024);
-    close(err_pipe_[0]);
-    if(0 < read_size) {
-        result->Set(NanNew<String>("_errmsg"), NanNew<String>(errmsg));
+    if(pipe_closed == false) {
+        char errmsg[1024];
+        int read_size = read(err_pipe_[0], errmsg, 1024);
+        if(0 < read_size) {
+            result->Set(NanNew<String>("_errmsg"), NanNew<String>(errmsg));
+        }
+        close(err_pipe_[0]);
     }
 
     return result;
@@ -190,7 +196,9 @@ int SpawnRunner::ChangeDirectory() {
 void SpawnRunner::SendErrno(const char* msg) {
     char str[1024];
     snprintf(str, 1022, "%d %s", errno, msg);
-    write(err_pipe_[1], str, strlen(str) + 1);
+    ssize_t size = write(err_pipe_[1], str, strlen(str) + 1);
+    assert(0 < size);
+
 }
 
 } // namespace runsync
