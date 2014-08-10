@@ -31,13 +31,39 @@ console.log(result.stderr); // => Error message\n
 ### `runsync.spawn(executable, [args], [options])`
 Polyfill of [child_process.spawnSync](http://nodejs.org/dist/v0.11.13/docs/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
 
+```js
+var res = runsync.spawn("node", ["-e", "console.log('Hello, World!')"], { encoding: "utf8" });
+console.log(res.stdout) // => 'Hello, World!\n'
+```
+
 ### `runsync.exec(command, [options])`
 Polyfill of [child_process.execSync](http://nodejs.org/dist/v0.11.13/docs/api/child_process.html#child_process_child_process_execsync_command_options).
+
+```js
+var output = runsync.exec("sleep 3 && echo Hello!", { timeout: 1000 });
+// => throw Exception because of timeout
+```
 
 ### `runsync.popen(command, [options])`
 This is similar to `runsync.exec`, but it returns **spawn object** likes `runsync.spawn`.
 This method will not throw Exceptions even if command fails.
 
+```js
+var result = runsync.popen("echo `cat` && echo strerr 1>&2", { input: "stdin", encoding: "utf8" });
+console.log(result.stdout) // => "stdin\n"
+console.log(result.stderr) // => "stderr\n"
+```
+
 ### `runsync.shell(command, [options])`
 This is similar to `runsync.exec`, but always set **'inherit'** to **options.stdio**.
 This method will throw Exceptions if command fails.
+
+```js
+runsync.shell("mocha --reporter nyan");
+// 32  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_,------,
+// 0   -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|   /\_/\ 
+// 0   -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-^|__( ^ .^) 
+//     -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-  ""  "" 
+//
+// 32 passing (493ms)
+```
