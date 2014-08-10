@@ -5,11 +5,13 @@ runsync
 
 Polyfill of spawnSync and execSync for Node-0.10.x ***(Unix only yet)***
 
+
 ## Instllation
 **Requires [node-gyp] (https://github.com/TooTallNate/node-gyp)**
 ```sh
 $ npm install runsync
 ```
+
 
 ## Usage
 ```js
@@ -22,3 +24,20 @@ runsync.exec("sleep 1");
 result = runsync.popen("echo Error message 1>&2", { encoding: "utf8" });
 console.log(result.stderr); // => Error message\n
 ```
+
+
+## API
+
+### `runsync.spawn(executable, [args], [options])`
+Polyfill of [child_process.spawnSync](http://nodejs.org/dist/v0.11.13/docs/api/child_process.html#child_process_child_process_spawnsync_command_args_options).
+
+### `runsync.exec(command, [options])`
+Polyfill of [child_process.execSync](http://nodejs.org/dist/v0.11.13/docs/api/child_process.html#child_process_child_process_execsync_command_options).
+
+### `runsync.popen(command, [options])`
+This is similar to `runsync.exec`, but it returns **spawn object** likes `runsync.spawn`.
+This method will not throw Exceptions even if command fails.
+
+### `runsync.shell(command, [options])`
+This is similar to `runsync.exec`, but always set **'inherit'** to **options.stdio**.
+This method will throw Exceptions if command fails.
