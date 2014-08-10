@@ -44,7 +44,11 @@ void SpawnRunner::Run() {
     assert(err == 0);
 
     pid_t pid = fork();
-    if(0 < pid) {
+
+    if(pid == -1) {
+        SendErrno("fork");
+        close(err_pipe_[1]);
+    } else if(0 < pid) {
         close(err_pipe_[1]);
         pid_ = pid;
         status_ = RunParent(pid);
