@@ -58,10 +58,6 @@ int SpawnRunner::RunChild() {
 
 int SpawnRunner::RunParent(pid_t pid) {
     int stat;
-    //int fl = fcntl(0, F_GETFL);
-    //std::cout << "--------------------" << std::endl;
-    //std::cout << (fl) << std::endl;
-    //std::cout << "--------------------" << std::endl;
     if(0 <= timeout_) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
@@ -137,16 +133,20 @@ char** SpawnRunner::BuildArgs() {
 int SpawnRunner::PipeStdio() {
     Local<Array> stdio = options_->Get(NanNew<String>("stdio")).As<Array>();
     int len = static_cast<int>(stdio->Length());
+    const char* tty_device[] = {"/dev/stdin", "/dev/stdout", "/dev/stderr"};
 
     for(int fileno = 0; fileno < len; fileno++) {
         Local<Value> pipe = stdio->Get(NanNew<Number>(fileno));
         int fd;
-        if(pipe->IsNumber()) {
-            fd = pipe->IntegerValue();
+        int mode = fileno == 0 ? O_RDONLY : O_WRONLY;
 
+        if(pipe->IsNumber()) {
+            fd = pipe->Uint32Value();
+            if(fd < 3) {
+                fd = open(tty_device[fd], mode);
+            }
         } else {
             String::Utf8Value pipe_value(pipe);
-            int mode = fileno == 0 ? O_RDONLY : O_WRONLY;
             if(strcmp(*pipe_value, "ignore") == 0) {
                 fd = open("/dev/null", mode);
             } else {
