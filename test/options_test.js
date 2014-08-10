@@ -63,7 +63,7 @@ suite("options:", function() {
         if(process.getuid) {
             var uid = process.getuid();
             var res = runsync.popen("id -u", { uid: uid, encoding: "utf8" });
-            equal(res.stdout, "1000\n");
+            equal(res.stdout, uid + "\n");
             equal(res.error, undefined);
         }
     });
@@ -80,7 +80,7 @@ suite("options:", function() {
         if(process.getgid) {
             var gid = process.getgid();
             var res = runsync.popen("id -u", { gid: gid, encoding: "utf8" });
-            equal(res.stdout, "1000\n");
+            equal(res.stdout, gid + "\n");
             equal(res.error, undefined);
         }
     });
