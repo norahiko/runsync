@@ -30,7 +30,6 @@ exports.spawn = function spawn(file, args, options) {
         options = args;
         args = [];
     }
-
     var proc = new SyncProcess(file, args, options);
     return proc.run();
 };
@@ -38,10 +37,19 @@ exports.spawn = function spawn(file, args, options) {
 exports.exec = function exec(command, options) {
     var result = exports.popen(command, options);
     if(result.stderr) {
-        process.stderr.write(result.stderr.toString());
+        process.stderr.write(result.stderr);
     }
     assertCommandResult(command, result);
+    return result.stdout;
+};
 
+
+exports.execFile = function execFile(file, args, options) {
+    var result = exports.spawn(file, args, options);
+    if(result.stderr) {
+        process.stderr.write(result.stderr);
+    }
+    assertCommandResult(result.args.join(" "), result);
     return result.stdout;
 };
 
@@ -56,7 +64,6 @@ exports.shell = function shell(command, options) {
     options = util._extend({}, options);
     options.stdio = "inherit";
     var result = exports.popen(command, options);
-
     assertCommandResult(command, result);
 };
 
