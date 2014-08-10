@@ -8,24 +8,25 @@ namespace runsync {
 class SpawnRunner {
     public:
         SpawnRunner(const Local<String>&, const Local<Array>&, const Local<Object>&);
-        Local<Object> Run();
+        void Run();
+        Local<Object> BuildResultObject();
 
     private:
-        Local<Object> BuildResultObject(int, pid_t);
-        char** BuildArgs();
-        int RunChild();
         int RunParent(pid_t);
-        int SetEnvironment();
+        int RunChild();
+        char** BuildArgs();
+        void SendErrno(const char*);
         int PipeStdio();
+        int SetEnvironment();
         int ChangeDirectory();
         int SetUID();
         int SetGID();
-        void SendErrno(const char*);
 
         Local<String> file_;
         Local<Array> args_;
         Local<Object> options_;
-
+        int pid_;
+        int status_;
         int err_pipe_[2];
         char* exec_file_;
         int64_t timeout_; // milliseconds
