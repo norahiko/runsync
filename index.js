@@ -92,7 +92,7 @@ SyncProcess.prototype.normalizeOptions = function (opts) {
         opts.encoding = null;
     }
     opts.input = opts.input || "";
-    opts.stdio = opts.stdio || "pipe";
+    opts.stdio = opts.stdio ? opts.stdio.slice(0) : "pipe";
 };
 
 SyncProcess.prototype.initStdioPipe = function(opts) {
@@ -105,13 +105,15 @@ SyncProcess.prototype.initStdioPipe = function(opts) {
     }
 
     var input = opts.input;
-    opts.stdio.forEach(function(pipe, i) {
+    opts.stdio.forEach(function(pipe, fileno) {
         if(pipe === "pipe") {
             var filename = getTempfileName();
-            fs.writeFileSync(filename, i === 0 ? input : "");
-            opts.stdio[i] = filename;
+            fs.writeFileSync(filename, fileno === 0 ? input : "");
+            opts.stdio[fileno] = filename;
+        } else if(pipe === "inherit" ) {
+            opts.stdio[fileno] = fileno;
         } else if(pipe === null || pipe === undefined) {
-            opts.stdio[i] = "ignore";
+            opts.stdio[fileno] = "ignore";
         } else if(typeof pipe !== "number" && pipe !== "inherit" && pipe !== "ignore") {
             throw new Error("runsync: Invalid stdio option '" + pipe + "'");
         }

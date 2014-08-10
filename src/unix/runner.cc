@@ -58,6 +58,10 @@ int SpawnRunner::RunChild() {
 
 int SpawnRunner::RunParent(pid_t pid) {
     int stat;
+    //int fl = fcntl(0, F_GETFL);
+    //std::cout << "--------------------" << std::endl;
+    //std::cout << (fl) << std::endl;
+    //std::cout << "--------------------" << std::endl;
     if(0 <= timeout_) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
@@ -132,10 +136,9 @@ char** SpawnRunner::BuildArgs() {
 
 int SpawnRunner::PipeStdio() {
     Local<Array> stdio = options_->Get(NanNew<String>("stdio")).As<Array>();
-    uint32_t len = stdio->Length();
-    static const char* devfiles[3] = {"/dev/stdin", "/dev/stdout", "/dev/stderr"};
+    int len = static_cast<int>(stdio->Length());
 
-    for(uint32_t fileno = 0; fileno < len; fileno++) {
+    for(int fileno = 0; fileno < len; fileno++) {
         Local<Value> pipe = stdio->Get(NanNew<Number>(fileno));
         int fd;
         if(pipe->IsNumber()) {
@@ -144,13 +147,7 @@ int SpawnRunner::PipeStdio() {
         } else {
             String::Utf8Value pipe_value(pipe);
             int mode = fileno == 0 ? O_RDONLY : O_WRONLY;
-            if(strcmp(*pipe_value, "inherit") == 0) {
-                if(fileno < 3) {
-                    fd = open(devfiles[fileno], mode);
-                } else {
-                    fd = fileno;
-                }
-            } else if(strcmp(*pipe_value, "ignore") == 0) {
+            if(strcmp(*pipe_value, "ignore") == 0) {
                 fd = open("/dev/null", mode);
             } else {
                 fd = open(*pipe_value, mode);
@@ -161,7 +158,8 @@ int SpawnRunner::PipeStdio() {
                 return 1;
             }
         }
-        if(dup2(fd, fileno) == -1) {
+
+        if(fd != fileno && dup2(fd, fileno) == -1) {
             SendErrno("dup");
             return 1;
         }
