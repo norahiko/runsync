@@ -31,7 +31,7 @@ suite("exec:", function() {
             runsync.exec("echo error 1>&2 && exit 1");
         }, "Command failed");
 
-        equal(expected, "error\n");
+        equal(expected.toString(), "error\n");
     });
 
     test("throw Error", function() {
