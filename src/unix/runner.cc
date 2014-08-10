@@ -40,8 +40,9 @@ SpawnRunner::SpawnRunner(const Local<String>& file, const Local<Array>& args, co
 }
 
 void SpawnRunner::Run() {
-    int err = pipe(err_pipe_);
-    assert(err == 0);
+    if(pipe(err_pipe_) != 0) {
+        return;
+    }
 
     pid_t pid = fork();
 
