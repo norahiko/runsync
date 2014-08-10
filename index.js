@@ -100,6 +100,12 @@ SyncProcess.prototype.normalizeOptions = function (opts) {
     }
     opts.input = opts.input || "";
     opts.stdio = opts.stdio ? opts.stdio.slice(0) : "pipe";
+
+    if(opts.killSignal in constants) {
+        opts.killSignal = constants[opts.killSignal];
+    } else {
+        opts.killSignal = constants.SIGTERM;
+    }
 };
 
 SyncProcess.prototype.initStdioPipe = function(opts) {

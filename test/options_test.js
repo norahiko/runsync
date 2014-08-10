@@ -92,4 +92,9 @@ suite("options:", function() {
             equal(res.error.code, "EPERM");
         }
     });
+
+    test("killSignal", function() {
+        var res = runsync.popen("sleep 10", { killSignal: "SIGKILL", timeout: 20 });
+        equal(res.signal, "SIGKILL");
+    });
 });

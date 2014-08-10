@@ -31,6 +31,7 @@ class SpawnRunner {
         char* exec_file_;
         int64_t timeout_; // milliseconds
         bool has_timedout_;
+        int killSignal_;
 };
 
 } // namespace runsync

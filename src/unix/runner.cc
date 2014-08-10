@@ -37,6 +37,7 @@ SpawnRunner::SpawnRunner(const Local<String>& file, const Local<Array>& args, co
     if(timeout_opt->IsNumber()) {
         timeout_ = timeout_opt->IntegerValue();
     }
+    killSignal_ = options->Get(NanNew<String>("killSignal"))->Uint32Value();
 }
 
 void SpawnRunner::Run() {
@@ -72,7 +73,7 @@ int SpawnRunner::RunParent(pid_t pid) {
             usleep(TIMEOUT_INTERVAL);
             gettimeofday(&tv, NULL);
             if(timeout < tv_to_seconds(&tv) - start) {
-                kill(pid, SIGTERM);
+                kill(pid, killSignal_);
                 has_timedout_ = true;
             }
         }
