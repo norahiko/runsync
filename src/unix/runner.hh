@@ -18,6 +18,7 @@ class SpawnRunner {
         int SetEnvironment();
         int PipeStdio();
         int ChangeDirectory();
+        int SetUID();
         void SendErrno(const char*);
 
         Local<String> file_;

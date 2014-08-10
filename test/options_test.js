@@ -58,4 +58,21 @@ suite("options:", function() {
         var res = runsync.spawn("node", ["test/spawn_script/nest_inherit.js"], { encoding: "utf8" });
         equal(res.stdout, "grandchild process\n");
     });
+
+    test("set uid", function() {
+        if(process.getuid) {
+            var uid = process.getuid();
+            var res = runsync.popen("id -u", { uid: uid, encoding: "utf8" });
+            equal(res.stdout, "1000\n");
+            equal(res.error, undefined);
+        }
+    });
+
+    test("set invalid uid", function() {
+        if(process.getuid) {
+            var res = runsync.popen("id -u", { uid: 0 });
+            assert.instanceOf(res.error, Error);
+            equal(res.error.code, "EPERM");
+        }
+    });
 });

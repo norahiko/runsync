@@ -49,6 +49,7 @@ int SpawnRunner::RunChild() {
     if(PipeStdio()) { return 1; }
     if(SetEnvironment()) { return 1; }
     if(ChangeDirectory()) { return 1; }
+    if(SetUID()) { return 1; }
     String::Utf8Value file(file_);
     char** args = BuildArgs();
     execvp(*file, args);
@@ -190,6 +191,21 @@ int SpawnRunner::ChangeDirectory() {
             SendErrno(*cwd_value);
             return err;
         }
+    }
+    return 0;
+}
+
+int SpawnRunner::SetUID() {
+    Local<Value> uid = options_->Get(NanNew<String>("uid"));
+    if(uid->IsUndefined() || uid->IsNull()) {
+        return 0;
+    } else if(uid->IsNumber() == false) {
+        errno = EPERM;
+        SendErrno("setuid");
+        return 1;
+    } else if(setuid(uid->Uint32Value()) == -1) {
+        SendErrno("setuid");
+        return 1;
     }
     return 0;
 }
