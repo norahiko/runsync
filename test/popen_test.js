@@ -74,13 +74,4 @@ suite("popen:", function() {
         equal(res.error.code, "ETIMEDOUT");
     });
 
-    test("additional pipe", function() {
-        var options = {
-            stdio: ["pipe", "pipe",  "pipe",  "pipe",  "pipe"],
-            encoding: "utf8",
-        };
-        var res = runsync.popen("echo hello 1>&3 && echo world 1>&4", options);
-        equal(res.output[3], "hello\n");
-        equal(res.output[4], "world\n");
-    });
 });

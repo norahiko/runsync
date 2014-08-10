@@ -2,6 +2,7 @@
 
 var runsync = require("../index.js");
 var chai = require("chai");
+var fs = require("fs");
 
 var assert = chai.assert;
 var equal = assert.strictEqual;
@@ -62,4 +63,19 @@ suite("spawn:", function() {
         var res = runsync.spawn("node", [path], { timeout: 3000, encoding: "utf8"});
         equal(res.stdout, "I'm late!\n");
     });
+
+    test("redirect", function() {
+        var outfile = "test/redirect_output.txt";
+        var errfile = "test/redirect_error.txt";
+        var out = fs.openSync(outfile, "w");
+        var err = fs.openSync(errfile, "w");
+        var args = ["-e", "console.log('stdout'); console.error('stderr');"];
+        runsync.spawn("node", args, { stdio: ["pipe", out, err] });
+
+        fs.closeSync(out);
+        fs.closeSync(err);
+        equal(fs.readFileSync(outfile).toString(), "stdout\n");
+        equal(fs.readFileSync(errfile).toString(), "stderr\n");
+    });
+
 });
