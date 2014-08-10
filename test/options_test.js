@@ -75,4 +75,21 @@ suite("options:", function() {
             equal(res.error.code, "EPERM");
         }
     });
+
+    test("set gid", function() {
+        if(process.getgid) {
+            var gid = process.getgid();
+            var res = runsync.popen("id -u", { gid: gid, encoding: "utf8" });
+            equal(res.stdout, "1000\n");
+            equal(res.error, undefined);
+        }
+    });
+
+    test("set invalid gid", function() {
+        if(process.getgid) {
+            var res = runsync.popen("id -u", { gid: 0 });
+            assert.instanceOf(res.error, Error);
+            equal(res.error.code, "EPERM");
+        }
+    });
 });

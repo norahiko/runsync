@@ -46,10 +46,13 @@ Local<Object> SpawnRunner::Run() {
 }
 
 int SpawnRunner::RunChild() {
-    if(PipeStdio()) { return 1; }
-    if(SetEnvironment()) { return 1; }
-    if(ChangeDirectory()) { return 1; }
-    if(SetUID()) { return 1; }
+    if(PipeStdio() ||
+       SetEnvironment() ||
+       ChangeDirectory() ||
+       SetUID() ||
+       SetGID()) {
+        return 1;
+    }
     String::Utf8Value file(file_);
     char** args = BuildArgs();
     execvp(*file, args);
@@ -205,6 +208,21 @@ int SpawnRunner::SetUID() {
         return 1;
     } else if(setuid(uid->Uint32Value()) == -1) {
         SendErrno("setuid");
+        return 1;
+    }
+    return 0;
+}
+
+int SpawnRunner::SetGID() {
+    Local<Value> gid = options_->Get(NanNew<String>("gid"));
+    if(gid->IsUndefined() || gid->IsNull()) {
+        return 0;
+    } else if(gid->IsNumber() == false) {
+        errno = EPERM;
+        SendErrno("setgid");
+        return 1;
+    } else if(setgid(gid->Uint32Value()) == -1) {
+        SendErrno("setgid");
         return 1;
     }
     return 0;
