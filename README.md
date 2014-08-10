@@ -63,11 +63,17 @@ console.log(result.stderr) // => "stderr\n"
 * This method will throw Exceptions if command fails.
 
 ```js
-runsync.shell("mocha --reporter nyan");
-// 32  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_,------,
-// 0   -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|   /\_/\ 
-// 0   -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-^|__( ^ .^) 
-//     -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-  ""  "" 
-//
-// 32 passing (493ms)
+try {
+  runsync.shell("mocha --reporter nyan");
+  // 31  -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_,------,
+  // 1   -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|   /\_/\ 
+  // 0   -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-^|__( x .x) 
+  //     -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-  ""  "" 
+  //  31 passing (468ms)
+  //  1 failing
+
+} catch(err) {
+  console.log(err.message);
+  // => 'Command failed: `mocha -u tdd --reporter nyan`'
+}
 ```
