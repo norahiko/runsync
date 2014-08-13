@@ -164,7 +164,11 @@ SyncProcess.prototype.setSpawnError = function(res) {
         var msg = res._errmsg;
         delete res._errmsg;
         var match = /^(\d+) (.*)/.exec(msg);
-        res.error = createSpawnError(Number(match[1]), match[2]);
+        if(match) {
+            res.error = createSpawnError(Number(match[1]), match[2]);
+        } else {
+            res.error = createSpawnError(constants.ENFILE, "could not create pipe");
+        }
     }
 
     if(res.error) {
