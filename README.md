@@ -47,7 +47,7 @@ var output = runsync.exec("sleep 3 && echo Hello!", { timeout: 1000 });
 
 -----
 ### `runsync.execFile(command, [options])`
-* Polyfill of[child_process.execFileSync](http://nodejs.org/dist/v0.11.13/docs/api/child_process.html#child_process_child_process_execfilesync_command_args_options).
+* Polyfill of [child_process.execFileSync](http://nodejs.org/dist/v0.11.13/docs/api/child_process.html#child_process_child_process_execfilesync_command_args_options).
 
 ```js
 var html = runsync.execFile("curl", ["--silent", "-X", "GET", "http://example.com"]);
