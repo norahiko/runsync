@@ -118,15 +118,15 @@ SyncProcess.prototype.initStdioPipe = function(opts) {
     }
 
     var input = opts.input;
-    opts.stdio.forEach(function(pipe, fileno) {
+    opts.stdio.forEach(function(pipe, fd) {
         if(pipe === "pipe") {
             var filename = getTempfileName();
-            fs.writeFileSync(filename, fileno === 0 ? input : "");
-            opts.stdio[fileno] = filename;
+            fs.writeFileSync(filename, fd === 0 ? input : "");
+            opts.stdio[fd] = filename;
         } else if(pipe === "inherit" ) {
-            opts.stdio[fileno] = fileno;
+            opts.stdio[fd] = fd;
         } else if(pipe === null || pipe === undefined) {
-            opts.stdio[fileno] = "ignore";
+            opts.stdio[fd] = "ignore";
         } else if(typeof pipe !== "number" && pipe !== "inherit" && pipe !== "ignore") {
             throw new Error("runsync: Invalid stdio option '" + pipe + "'");
         }
@@ -177,7 +177,6 @@ SyncProcess.prototype.setSpawnError = function(res) {
         res.stderr = null;
     }
 };
-
 
 function assertCommandResult(command, result) {
     if(result.error || result.status !== 0) {
