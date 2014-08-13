@@ -98,6 +98,7 @@ SyncProcess.prototype.normalizeOptions = function (opts) {
     if(opts.encoding === "buffer") {
         opts.encoding = null;
     }
+    opts.timeout = (0 <= opts.timeout) ? opts.timeout : -1;
     opts.input = opts.input || "";
     opts.stdio = opts.stdio ? opts.stdio.slice(0) : "pipe";
 

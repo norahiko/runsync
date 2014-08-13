@@ -32,10 +32,7 @@ SpawnRunner::SpawnRunner(const Local<String>& file, const Local<Array>& args, co
           status_(-1),
           timeout_(-1),
           has_timedout_(false) {
-    Local<Value> timeout_opt = options->Get(NanNew<String>("timeout"));
-    if(timeout_opt->IsNumber()) {
-        timeout_ = timeout_opt->IntegerValue();
-    }
+    timeout_ = options->Get(NanNew<String>("timeout"))->IntegerValue();
     killSignal_ = options->Get(NanNew<String>("killSignal"))->Uint32Value();
 }
 
