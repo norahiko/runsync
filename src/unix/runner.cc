@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
+#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include "runner.hh"
@@ -10,8 +11,6 @@
 namespace runsync {
 
 const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
-
-const char* tty_device[] = {"/dev/stdin", "/dev/stdout", "/dev/stderr"};
 
 const double MILLI_TO_MICRO = 0.001;
 
@@ -125,21 +124,28 @@ int SpawnRunner::PipeStdio() {
     Local<Array> stdio = options_->Get(NanNew<String>("stdio")).As<Array>();
     int len = static_cast<int>(stdio->Length());
 
-    for(int fileno = 0; fileno < len; fileno++) {
-        Local<Value> pipe = stdio->Get(NanNew<Number>(fileno));
+    for(int child_fd = 0; child_fd < len; child_fd++) {
+        Local<Value> io = stdio->Get(NanNew<Number>(child_fd));
         int fd;
-        int mode = fileno == 0 ? O_RDONLY : O_WRONLY;
+        int mode = child_fd == 0 ? O_RDONLY : O_WRONLY;
 
-        if(pipe->IsNumber()) {
-            fd = pipe->Uint32Value();
+        if(io->IsNumber()) {
+            // inherit
+            fd = io->Uint32Value();
             if(fd < 3) {
-                fd = open(tty_device[fd], mode);
+                ioctl(fd, FIONCLEX);
+                if(child_fd <= 2) {
+                    int blocK_mode = 0;
+                    ioctl(fd, FIONBIO, &blocK_mode);
+                }
             }
         } else {
-            String::Utf8Value pipe_value(pipe);
+            String::Utf8Value pipe_value(io);
             if(strcmp(*pipe_value, "ignore") == 0) {
+                // ignore
                 fd = open("/dev/null", mode);
             } else {
+                // pipe
                 fd = open(*pipe_value, mode);
             }
 
@@ -149,9 +155,12 @@ int SpawnRunner::PipeStdio() {
             }
         }
 
-        if(fd != fileno && dup2(fd, fileno) == -1) {
-            SendErrno("dup");
-            return 1;
+        if(fd != child_fd) {
+            if(dup2(fd, child_fd) == -1) {
+                SendErrno("dup");
+                return 1;
+            }
+            close(fd);
         }
     }
     return 0;
