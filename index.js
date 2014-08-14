@@ -8,6 +8,7 @@ var util = require("util");
 
 var isWindows = process.platform === "win32";
 var shell = isWindows ? "cmd.exe" : "/bin/sh";
+var nullDevice = isWindows ? "NULL" : "/dev/null";
 var tmpdir = require("os").tmpdir();
 var binding = require("./build/Release/runsync.node");
 var errorCodeMap = Object.create(null);
@@ -126,8 +127,8 @@ SyncProcess.prototype.initStdioPipe = function(opts) {
             opts.stdio[fd] = filename;
         } else if(pipe === "inherit" ) {
             opts.stdio[fd] = fd;
-        } else if(pipe === null || pipe === undefined) {
-            opts.stdio[fd] = "ignore";
+        } else if(pipe === "ignore" || pipe === null || pipe === undefined) {
+            opts.stdio[fd] = nullDevice;
         } else if(typeof pipe !== "number" && pipe !== "inherit" && pipe !== "ignore") {
             throw new Error("runsync: Invalid stdio option '" + pipe + "'");
         }
@@ -137,7 +138,7 @@ SyncProcess.prototype.initStdioPipe = function(opts) {
 SyncProcess.prototype.readOutput = function(res) {
     var encoding = this.options.encoding;
     res.output = this.options.stdio.map(function(pipe, i) {
-        if(typeof pipe === "number" || pipe === "inherit" || pipe === "ignore") {
+        if(typeof pipe === "number" || pipe === "inherit" || pipe === nullDevice) {
             return null;
         } else if(i === 0) {
             fs.unlinkSync(pipe);

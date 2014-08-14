@@ -138,13 +138,7 @@ int SpawnRunner::PipeStdio() {
             }
         } else {
             String::Utf8Value pipe_value(io);
-            if(strcmp(*pipe_value, "ignore") == 0) {
-                // ignore
-                fd = open("/dev/null", mode);
-            } else {
-                // pipe
-                fd = open(*pipe_value, mode);
-            }
+            fd = open(*pipe_value, mode);
 
             if(fd == -1) {
                 SendErrno(*pipe_value);
