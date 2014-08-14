@@ -1,10 +1,6 @@
 #include "runsync.hh"
+#include "runner.hh"
 
-#ifdef _MSC_VER
-# include "win/runner.hh"
-#else
-# include "unix/runner.hh"
-#endif
 
 using namespace v8;
 
