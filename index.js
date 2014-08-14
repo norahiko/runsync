@@ -6,9 +6,7 @@ var fs = require("fs");
 var pathModule = require("path");
 var util = require("util");
 
-var isWindows = process.platform === "win32";
-var shell = isWindows ? "cmd.exe" : "/bin/sh";
-var nullDevice = isWindows ? "NULL" : "/dev/null";
+var nullDevice = "/dev/null";
 var tmpdir = require("os").tmpdir();
 var binding = require("./build/Release/runsync.node");
 var errorCodeMap = Object.create(null);
@@ -55,8 +53,8 @@ exports.execFile = function execFile(file, args, options) {
 };
 
 exports.popen = function popen(command, options) {
-    var args = buildCommandArgs(command);
-    var result = exports.spawn(shell, args, options);
+    var args = ["-c", command];
+    var result = exports.spawn("/bin/sh", args, options);
     result.command = result.args[2];
     return result;
 };
@@ -193,14 +191,6 @@ function assertCommandResult(command, result) {
 function getTempfileName() {
     var name = "runsync_" + Date.now() + "_" + Math.random().toString().slice(2);
     return pathModule.join(tmpdir, name);
-}
-
-function buildCommandArgs(command) {
-    if (isWindows) {
-        return ["/s", "/c", "\"" + command + "\""];
-    } else {
-        return ["-c", command];
-    }
 }
 
 function createSpawnError(errno, msg) {
