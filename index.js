@@ -4,7 +4,6 @@ var constants = require("constants");
 var assert = require("assert");
 var fs = require("fs");
 var pathModule = require("path");
-var util = require("util");
 
 var nullDevice = "/dev/null";
 var tmpdir = require("os").tmpdir();
@@ -60,7 +59,7 @@ exports.popen = function popen(command, options) {
 };
 
 exports.shell = function shell(command, options) {
-    options = util._extend({}, options);
+    options = Object.create(options || null);
     options.stdio = "inherit";
     var result = exports.popen(command, options);
     assertCommandResult(command, result);
@@ -75,7 +74,7 @@ function SyncProcess(file, args, options) {
     this.file = file;
     this.args = args.slice(0);
     this.args.unshift(this.file);
-    this.options = options ? util._extend({}, options) : {};
+    this.options = Object.create(options || null);
     this.normalizeOptions(this.options);
     this.initStdioPipe(this.options);
 }
