@@ -7,13 +7,15 @@ Polyfill of spawnSync and execSync for Node-0.10.x ***(Unix only yet)***
 
 
 ## Instllation
-**Requires [node-gyp] (https://github.com/TooTallNate/node-gyp)**
+Requires [node-gyp] (https://github.com/TooTallNate/node-gyp)
+
 ```sh
 $ npm install runsync
 ```
 
 
 ## Usage
+
 ```js
 var runsync = require("runsync");
 var result = runsync.spawn("echo", ["Hello", "World!"], { encoding: "utf8" });
