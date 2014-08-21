@@ -1,7 +1,7 @@
 {
   "name": "runsync",
-  "version": "0.1.5",
-  "description": "Run child process synchronously",
+  "version": "0.1.6",
+  "description": "Polyfill of spawnSync and execSync for Node-0.10.x (Unix only yet)",
   "main": "index.js",
   "directories": {
     "test": "test"
