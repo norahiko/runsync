@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "mocha -u tdd",
-    "install": "node-gyp rebuild",
+    "install": "node src/build.js",
     "coverage": "mocha -u tdd --require blanket -R html-cov > coverage.html && google-chrome coverage.html",
     "coveralls": "mocha -u tdd --require blanket -R mocha-lcov-reporter | coveralls"
   },

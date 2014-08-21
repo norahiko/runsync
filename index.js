@@ -4,10 +4,11 @@ var constants = require("constants");
 var assert = require("assert");
 var fs = require("fs");
 var pathModule = require("path");
+var binding;
 
+var isWindows = process.platform === "win32";
 var nullDevice = "/dev/null";
 var tmpdir = require("os").tmpdir();
-var binding = require("./build/Release/runsync.node");
 var errorCodeMap = Object.create(null);
 
 for(var code in constants) {
@@ -21,40 +22,50 @@ for(var code in constants) {
  * exports
  */
 
-exports.binding = binding;
 
-exports.spawn = function spawn(file, args, options) {
-    if(Array.isArray(args) === false) {
-        options = args;
-        args = [];
-    }
-    var proc = new SyncProcess(file, args, options);
-    return proc.run();
-};
+if(isWindows) {
+    var child_process = require("child_process");
+    exports.spawn = child_process.spawnSync;
+    exports.exec = child_process.execSync;
+    exports.execFile = child_process.execFileSync;
+} else {
+    binding = require("./build/Release/runsync.node");
+    exports.binding = binding;
 
-exports.exec = function exec(command, options) {
-    var result = exports.popen(command, options);
-    if(result.stderr) {
-        process.stderr.write(result.stderr);
-    }
-    assertCommandResult(command, result);
-    return result.stdout;
-};
+    exports.spawn = function spawn(file, args, options) {
+        if(Array.isArray(args) === false) {
+            options = args;
+            args = [];
+        }
+        var proc = new SyncProcess(file, args, options);
+        return proc.run();
+    };
+
+    exports.exec = function exec(command, options) {
+        var result = exports.popen(command, options);
+        if(result.stderr) {
+            process.stderr.write(result.stderr);
+        }
+        assertCommandResult(command, result);
+        return result.stdout;
+    };
 
 
-exports.execFile = function execFile(file, args, options) {
-    var result = exports.spawn(file, args, options);
-    if(result.stderr) {
-        process.stderr.write(result.stderr);
-    }
-    assertCommandResult(result.args.join(" "), result);
-    return result.stdout;
-};
+    exports.execFile = function execFile(file, args, options) {
+        var result = exports.spawn(file, args, options);
+        if(result.stderr) {
+            process.stderr.write(result.stderr);
+        }
+        assertCommandResult(result.args.join(" "), result);
+        return result.stdout;
+    };
+}
 
 exports.popen = function popen(command, options) {
-    var args = ["-c", command];
-    var result = exports.spawn("/bin/sh", args, options);
-    result.command = result.args[2];
+    var shell = isWindows ? "cmd.exe" : "/bin/sh";
+    var args = isWindows ? ["/c", "/s", command] : ["-c", command];
+    var result = exports.spawn(shell, args, options);
+    result.command = command;
     return result;
 };
 
