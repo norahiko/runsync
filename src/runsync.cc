@@ -1,23 +1,26 @@
 #include <errno.h>
-#include <iostream>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include "runsync.hh"
 
-
-namespace runsync {
+using v8::Array;
+using v8::Boolean;
+using v8::Handle;
+using v8::Local;
+using v8::Number;
+using v8::Object;
+using v8::String;
+using v8::Value;
 
 const int TIMEOUT_INTERVAL = 1000 * 20; // microseconds
 
-const double MILLI_TO_MICRO = 0.001;
+int64_t MICRO_SCALE = 1000 * 1000;
 
-double tv_to_seconds(struct timeval* tv) {
-    static double usec = 1.0 / 1000 / 1000;
-    return tv->tv_sec + tv->tv_usec * usec;
+int64_t tv_to_microseconds(struct timeval* tv) {
+    return tv->tv_sec * MICRO_SCALE + tv->tv_usec;
 }
 
 
@@ -29,7 +32,7 @@ SpawnRunner::SpawnRunner(const Local<String>& file, const Local<Array>& args, co
         : file_(file),
           args_(args),
           options_(options),
-          pid_(-1),
+          pid_(0),
           status_(-1),
           timeout_(-1),
           has_timedout_(false) {
@@ -63,13 +66,13 @@ int SpawnRunner::RunParent() {
     if(0 <= timeout_) {
         struct timeval tv;
         gettimeofday(&tv, NULL);
-        double timeout = timeout_ * MILLI_TO_MICRO;
-        double start = tv_to_seconds(&tv);
+        int64_t timeout = timeout_ * 1000;
+        int64_t start = tv_to_microseconds(&tv);
 
         while(waitpid(pid_, &status, WNOHANG) == 0) {
             usleep(TIMEOUT_INTERVAL);
             gettimeofday(&tv, NULL);
-            if(timeout < tv_to_seconds(&tv) - start) {
+            if(timeout < tv_to_microseconds(&tv) - start) {
                 kill(pid_, killSignal_);
                 has_timedout_ = true;
             }
@@ -251,8 +254,6 @@ Local<Object> SpawnRunner::BuildResultObject() {
     return result;
 }
 
-} // namespace runsync
-
 
 /**
  * exports method
@@ -272,16 +273,14 @@ NAN_METHOD(SpawnSync) {
     Local<Array> spawn_args = args[1].As<Array>();
     Local<Object> options = args[2].As<Object>();
 
-    runsync::SpawnRunner runner(file, spawn_args, options);
+    SpawnRunner runner(file, spawn_args, options);
     runner.Run();
     Local<Object> result = runner.BuildResultObject();
     NanReturnValue(result);
 }
 
-
 void init(Handle<Object> exports) {
     NODE_SET_METHOD(exports, "spawnSync", SpawnSync);
 }
-
 
 NODE_MODULE(runsync, init)

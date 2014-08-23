@@ -3,25 +3,16 @@
 #include <node.h>
 #include <nan.h>
 
-using v8::Array;
-using v8::Boolean;
-using v8::Handle;
-using v8::Local;
-using v8::Null;
-using v8::Number;
-using v8::Object;
-using v8::String;
-using v8::Value;
-
-
-namespace runsync {
-
 
 class SpawnRunner {
     public:
-        SpawnRunner(const Local<String>&, const Local<Array>&, const Local<Object>&);
+        SpawnRunner(
+            const v8::Local<v8::String>&,
+            const v8::Local<v8::Array>&,
+            const v8::Local<v8::Object>&
+        );
         void Run();
-        Local<Object> BuildResultObject();
+        v8::Local<v8::Object> BuildResultObject();
 
     private:
         int RunParent();
@@ -34,9 +25,9 @@ class SpawnRunner {
         int SetUID();
         int SetGID();
 
-        Local<String> file_;
-        Local<Array> args_;
-        Local<Object> options_;
+        v8::Local<v8::String> file_;
+        v8::Local<v8::Array> args_;
+        v8::Local<v8::Object> options_;
         int pid_;
         int status_;
         int err_pipe_[2];
@@ -46,5 +37,4 @@ class SpawnRunner {
         int killSignal_;
 };
 
-} // namespace runsync
 #endif
