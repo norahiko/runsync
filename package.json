@@ -1,6 +1,6 @@
 {
   "name": "runsync",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Polyfill of spawnSync and execSync for Node-0.10.x (Unix only yet)",
   "main": "index.js",
   "directories": {
