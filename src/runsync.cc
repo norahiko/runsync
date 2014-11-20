@@ -78,7 +78,7 @@ int SpawnRunner::RunParent() {
             }
         }
     } else {
-        waitpid(pid_, &status, 0);
+        while (waitpid(pid_, &status, 0) == -1 && errno == EINTR);
     }
     return status;
 }
