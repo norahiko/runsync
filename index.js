@@ -23,8 +23,8 @@ for(var code in constants) {
  */
 
 
-if(isWindows) {
-    var child_process = require("child_process");
+var child_process = require("child_process");
+if (isWindows || (child_process.execSync && child_process.spawnSync && child_process.execFileSync)) {
     exports.spawn = child_process.spawnSync;
     exports.exec = child_process.execSync;
     exports.execFile = child_process.execFileSync;
